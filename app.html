@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f0f4f8">
+<title>AquaFlow — Smart Water Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4f8;--white:#fff;--s1:#f7f9fc;--bd:#e2e8f0;--bd2:#cbd5e1;
+  --blue:#1a6fc4;--blue2:#2563eb;--blue-l:#dbeafe;--blue-ll:#eff6ff;
+  --green:#16a34a;--green-l:#dcfce7;--red:#dc2626;--red-l:#fee2e2;
+  --orange:#ea580c;--orange-l:#ffedd5;--warn:#f59e0b;--warn-l:#fef3c7;
+  --txt:#0f172a;--txt2:#475569;--txt3:#94a3b8;--font:'Inter',sans-serif;
+}
+html,body{background:var(--bg);font-family:var(--font);color:var(--txt);min-height:100vh}
+
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:20px}
+.login-card{background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.login-logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#1a6fc4,#2563eb);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px}
+.login-logo-text{font-size:24px;font-weight:700;color:var(--blue2)}
+.login-logo-text span{font-weight:400;color:var(--txt2)}
+.login-title{font-size:18px;font-weight:600;text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--txt3);text-align:center;margin-bottom:28px}
+.login-field{margin-bottom:16px}
+.login-field label{display:block;font-size:13px;font-weight:500;color:var(--txt2);margin-bottom:6px}
+.login-field input{width:100%;border:1.5px solid var(--bd2);border-radius:8px;font-family:var(--font);font-size:14px;padding:11px 14px;background:var(--s1);color:var(--txt);outline:none;transition:.15s}
+.login-field input:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff}
+.login-btn{width:100%;background:var(--blue2);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:15px;font-weight:600;padding:13px;cursor:pointer;transition:.15s;margin-top:4px}
+.login-btn:hover{background:var(--blue)}
+.login-btn:active{transform:scale(.98)}
+.login-error{background:var(--red-l);color:var(--red);border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;text-align:center;margin-bottom:16px;display:none}
+.login-error.show{display:block}
+.login-footer{text-align:center;font-size:12px;color:var(--txt3);margin-top:20px}
+
+/* TOPBAR */
+.topbar{background:var(--white);border-bottom:1px solid var(--bd);padding:0 24px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#1a6fc4,#2563eb);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.logo-text{font-size:18px;font-weight:700;color:var(--blue2)}
+.logo-text span{font-weight:400;color:var(--txt2)}
+.topbar-title{font-size:14px;color:var(--txt2);margin-left:4px;padding-left:16px;border-left:1px solid var(--bd)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.conn-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid;transition:.3s}
+.conn-badge.ok{background:var(--green-l);color:var(--green);border-color:#bbf7d0}
+.conn-badge.err{background:var(--red-l);color:var(--red);border-color:#fecaca}
+.conn-badge.wait{background:var(--warn-l);color:var(--warn);border-color:#fde68a}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.conn-badge.wait .conn-dot{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.logout-btn{background:var(--red-l);color:var(--red);border:1px solid #fecaca;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue2);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+/* LAYOUT */
+.main{max-width:1100px;margin:0 auto;padding:24px 20px;display:grid;grid-template-columns:1fr 280px;gap:20px}
+@media(max-width:768px){.main{grid-template-columns:1fr;padding:16px}}
+.left-col{display:flex;flex-direction:column;gap:16px}
+.right-col{display:flex;flex-direction:column;gap:16px}
+
+/* CARD */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--bd);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card-title{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px;margin-bottom:16px}
+
+/* CONFIG */
+.cfg-row{display:flex;gap:8px;flex-wrap:wrap}
+.cfg-row input{flex:1;min-width:200px;border:1px solid var(--bd2);border-radius:8px;font-family:var(--font);font-size:13px;padding:9px 14px;background:var(--s1);color:var(--txt);outline:none;transition:.15s}
+.cfg-row input:focus{border-color:var(--blue2)}
+.cfg-row input::placeholder{color:var(--txt3)}
+.btn-connect{background:var(--blue2);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;padding:9px 20px;cursor:pointer;white-space:nowrap}
+.btn-connect:hover{background:var(--blue)}
+.conn-bar{background:var(--white);border:1px solid var(--bd);border-radius:12px;padding:12px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:none;align-items:center;justify-content:space-between;gap:12px}
+.change-ip-btn{background:var(--blue-l);color:var(--blue2);border:1px solid #bfdbfe;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)}
+
+/* TANK */
+.tank-layout{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.tank-progress-col{flex:1;min-width:200px;display:flex;flex-direction:column;gap:12px}
+.progress-label{display:flex;justify-content:space-between}
+.progress-label span:first-child{font-size:13px;color:var(--txt2)}
+.progress-label span:last-child{font-size:14px;font-weight:600;color:var(--blue2)}
+.progress-bg{height:14px;background:var(--bg);border-radius:99px;border:1px solid var(--bd);overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#3b82f6,#1a6fc4);transition:width .7s}
+.tank-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tmeta{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px 14px}
+.tmeta-l{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.tmeta-v{font-size:14px;font-weight:600}
+.tank-svg{width:100px;height:130px;flex-shrink:0}
+
+/* MOTOR */
+.motor-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.motor-grid{grid-template-columns:1fr}}
+.auto-box,.manual-box{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.manual-box{display:flex;flex-direction:column;gap:10px}
+.auto-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.auto-title,.manual-title{font-size:13px;font-weight:600;letter-spacing:.5px}
+.mode-toggle{display:flex;align-items:center;gap:6px}
+.toggle-sw{width:36px;height:20px;border-radius:99px;border:none;cursor:pointer;position:relative;transition:.25s}
+.toggle-sw::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.25s}
+.toggle-sw.on{background:var(--green)}
+.toggle-sw.off{background:var(--bd2)}
+.toggle-sw.on::after{left:19px}
+.auto-row{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--bd);font-size:13px}
+.mbtn{width:100%;padding:13px;border-radius:8px;border:none;font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.15s}
+.mbtn:active{transform:scale(.98)}
+.mbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.mbtn-on{background:var(--blue2);color:#fff}
+.mbtn-on:hover:not(:disabled){background:var(--blue)}
+.mbtn-off{background:var(--red);color:#fff}
+.mbtn-off:hover:not(:disabled){background:#b91c1c}
+
+/* ACTIVITY */
+.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.activity-grid{grid-template-columns:1fr}}
+.act-label{font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.act-item{padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px;display:flex;flex-direction:column;gap:2px}
+.act-item:last-child{border-bottom:none}
+.act-item span{color:var(--txt2);line-height:1.5}
+strong.on{color:var(--green)}
+strong.off{color:var(--red)}
+.log-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;align-items:flex-start}
+.log-row:last-child{border-bottom:none}
+.log-badge{padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px;flex-shrink:0}
+.log-badge.on{background:var(--green-l);color:var(--green)}
+.log-badge.off{background:var(--red-l);color:var(--red)}
+.log-text{color:var(--txt2);flex:1}
+.log-time{color:var(--txt3);font-size:11px;white-space:nowrap}
+
+/* RIGHT */
+.health-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.health-item:last-child{border-bottom:none}
+.health-icon{width:32px;height:32px;border-radius:8px;background:var(--s1);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.health-label{flex:1;font-size:13px;color:var(--txt2)}
+.health-ok{width:22px;height:22px;border-radius:50%;background:var(--green-l);border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center}
+.health-warn{width:22px;height:22px;border-radius:50%;background:var(--warn-l);border:1px solid #fde68a;display:flex;align-items:center;justify-content:center}
+.notif-count{font-size:11px;background:var(--orange-l);color:var(--orange);padding:2px 8px;border-radius:99px;font-weight:500;margin-left:auto}
+.notif-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);align-items:flex-start}
+.notif-item:last-child{border-bottom:none}
+.notif-icon{width:28px;height:28px;border-radius:6px;background:var(--warn-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.notif-msg{font-size:13px;color:var(--txt);margin-bottom:2px}
+.notif-time{font-size:11px;color:var(--txt3)}
+.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sstat{background:var(--white);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:center}
+.sstat-v{font-size:18px;font-weight:700;margin-bottom:2px}
+.sstat-l{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.global-step{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px;line-height:1.5}
+.global-step:last-child{border-bottom:none}
+.gs-num{width:20px;height:20px;border-radius:50%;background:var(--blue-l);color:var(--blue2);font-size:11px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.code-pill{background:var(--s1);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;color:var(--blue2);word-break:break-all;margin:6px 0;cursor:pointer}
+.code-pill:hover{border-color:var(--blue2)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">💧</div>
+      <div class="login-logo-text">AQUA<span>FLOW</span></div>
+    </div>
+    <div class="login-title">Welcome Back</div>
+    <div class="login-sub">Sign in to access your tank control panel</div>
+    <div class="login-error" id="loginError">Incorrect username or password</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-footer">AquaFlow Smart Water Management System</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+
+<div class="topbar">
+  <a class="logo" href="#"><div class="logo-icon">💧</div><div class="logo-text">AQUA<span>FLOW</span></div></a>
+  <div class="topbar-title">Motor Control &amp; Tank Status</div>
+  <div class="topbar-right">
+    <div class="conn-badge wait" id="connBadge"><div class="conn-dot"></div><span id="connTxt">Connecting...</span></div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+    <div class="avatar" id="avatarTxt">AD</div>
+  </div>
+</div>
+
+<div class="main">
+<div class="left-col">
+
+  <!-- IP Config box -->
+  <div class="card" style="padding:16px 20px" id="cfgBox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--txt2)">ESP Connection</span>
+      <button onclick="hideCfg()" style="background:none;border:none;font-size:12px;color:var(--txt3);cursor:pointer">✕ Hide</button>
+    </div>
+    <div class="cfg-row">
+      <input id="ipInput" type="text" placeholder="192.168.0.159  or  tunnel URL"/>
+      <button class="btn-connect" onclick="saveAndConnect()">Save &amp; Connect</button>
+    </div>
+  </div>
+
+  <!-- Connected bar (auto shown after IP saved) -->
+  <div class="conn-bar" id="connBar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;color:var(--txt2)">Auto-connecting to:</span>
+      <span style="font-size:13px;font-weight:600;color:var(--blue2)" id="connBarIp">—</span>
+    </div>
+    <button class="change-ip-btn" onclick="showCfg()">Change IP</button>
+  </div>
+
+  <!-- Tank -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L6 9h12L12 2z"/><rect x="4" y="9" width="16" height="13" rx="2"/></svg>
+      Tank Water Level
+    </div>
+    <div class="tank-layout">
+      <div class="tank-progress-col">
+        <div>
+          <div class="progress-label"><span>Progress</span><span id="lvlPct">0% Full</span></div>
+          <div class="progress-bg"><div class="progress-fill" id="lvlBar" style="width:0%"></div></div>
+        </div>
+        <div class="tank-meta">
+          <div class="tmeta"><div class="tmeta-l">Status</div><div class="tmeta-v" id="lvlStatus">Unknown</div></div>
+          <div class="tmeta"><div class="tmeta-l">Sensor</div><div class="tmeta-v" id="sensorStatus">—</div></div>
+          <div class="tmeta"><div class="tmeta-l">WiFi RSSI</div><div class="tmeta-v" id="rssiVal">—</div></div>
+          <div class="tmeta"><div class="tmeta-l">Uptime</div><div class="tmeta-v" id="uptimeVal">—</div></div>
+        </div>
+      </div>
+      <svg class="tank-svg" viewBox="0 0 100 130">
+        <defs><clipPath id="tc"><rect x="14" y="12" width="72" height="96" rx="8"/></clipPath></defs>
+        <rect x="14" y="12" width="72" height="96" rx="8" fill="#f0f4f8" stroke="#cbd5e1" stroke-width="1.5"/>
+        <rect id="svgWater" x="15" y="108" width="70" height="0" fill="#3b82f6" opacity=".5" clip-path="url(#tc)"/>
+        <path id="svgWave" d="M15 108 Q30 105 50 108 Q70 111 85 108 L85 110 Q70 113 50 110 Q30 107 15 110 Z" fill="#3b82f6" opacity=".4" style="display:none"/>
+        <rect x="14" y="12" width="72" height="96" rx="8" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="11" y1="28" x2="17" y2="28" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="11" y1="60" x2="17" y2="60" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="11" y1="92" x2="17" y2="92" stroke="#94a3b8" stroke-width="1"/>
+        <text x="7" y="31" font-size="8" fill="#94a3b8" font-family="monospace">F</text>
+        <text x="6" y="63" font-size="8" fill="#94a3b8" font-family="monospace">½</text>
+        <text x="7" y="95" font-size="8" fill="#94a3b8" font-family="monospace">E</text>
+        <rect x="38" y="108" width="24" height="12" rx="3" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+        <ellipse cx="50" cy="12" rx="36" ry="5" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+        <rect x="20" y="18" width="8" height="40" rx="4" fill="#fff" opacity=".35"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Motor -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg>
+      Motor Control
+    </div>
+    <div class="motor-grid">
+      <div class="auto-box">
+        <div class="auto-head">
+          <div class="auto-title">AUTOMATIC</div>
+          <div class="mode-toggle">
+            <span id="autoLabel" style="font-size:12px;color:var(--txt3)">OFF</span>
+            <button class="toggle-sw off" id="autoToggle" onclick="toggleAuto()"></button>
+            <span id="autoActive" style="font-size:12px;font-weight:600;color:var(--txt3)">Inactive</span>
+          </div>
+        </div>
+        <div class="auto-row"><span>Auto Turn ON</span><span>Tank Empty</span></div>
+        <div class="auto-row"><span>Auto Turn OFF</span><span>Tank Full</span></div>
+        <div class="auto-row"><span>Mode</span><span id="modeSpan" style="color:var(--txt3)">Manual</span></div>
+      </div>
+      <div class="manual-box">
+        <div class="manual-title">MANUAL</div>
+        <button class="mbtn mbtn-on" id="btnOn" onclick="motorCmd('on')">▶ MANUAL ON</button>
+        <button class="mbtn mbtn-off" id="btnOff" onclick="motorCmd('off')">■ MANUAL OFF</button>
+        <div style="text-align:center;font-size:12px;color:var(--txt3)" id="motorRunTxt">Motor stopped</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      System Activity
+    </div>
+    <div class="activity-grid">
+      <div><div class="act-label">Last Activation</div><div id="actSection"><div class="act-item"><span>No events yet</span></div></div></div>
+      <div><div class="act-label">Last Motor ON/OFF</div><div id="logSection"><div class="act-item"><span>Waiting...</span></div></div></div>
+    </div>
+  </div>
+
+</div>
+<div class="right-col">
+
+  <!-- Health -->
+  <div class="card">
+    <div class="card-title">Tank Health</div>
+    <div class="health-item"><div class="health-icon">⚙️</div><div class="health-label">Pump Status</div><div class="health-ok" id="hPump">✓</div></div>
+    <div class="health-item"><div class="health-icon">⚡</div><div class="health-label">Power Supply</div><div class="health-ok" id="hPower">✓</div></div>
+    <div class="health-item"><div class="health-icon">📡</div><div class="health-label">Sensor Status</div><div class="health-ok" id="hSensor">✓</div></div>
+    <div class="health-item"><div class="health-icon">📶</div><div class="health-label">WiFi Signal</div><div class="health-ok" id="hWifi">✓</div></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-strip">
+    <div class="sstat"><div class="sstat-v" id="sUptime">—</div><div class="sstat-l">Uptime</div></div>
+    <div class="sstat"><div class="sstat-v" id="sRssi">—</div><div class="sstat-l">Signal</div></div>
+    <div class="sstat"><div class="sstat-v" id="sEvents">0</div><div class="sstat-l">Events</div></div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card">
+    <div class="card-title">Notifications<span class="notif-count" id="notifCount">0 alerts</span></div>
+    <div id="notifList"><div style="font-size:13px;color:var(--txt3);text-align:center;padding:12px 0">No notifications yet</div></div>
+  </div>
+
+  <!-- Global Access -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Access From Anywhere
+    </div>
+    <div class="global-step"><div class="gs-num">1</div><div>Run this on your PC to create a tunnel:</div></div>
+    <div class="code-pill" onclick="copyCmd()" id="tunnelCmd">cloudflared tunnel --url http://192.168.0.159</div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">↑ click to copy</div>
+    <div class="global-step"><div class="gs-num">2</div><div>Paste the <strong>trycloudflare.com</strong> URL in the IP box and save.</div></div>
+    <div class="global-step"><div class="gs-num">3</div><div>Bookmark this page on your phone — works worldwide forever.</div></div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════╗
+// ║   YOUR LOGIN CREDENTIALS             ║
+// ║   Change username and password here  ║
+// ╚══════════════════════════════════════╝
+const USERS = {
+  'Adhiban':     '9444937999',
+  'Vijayakumar': '9444936999',
+  'Vani':        '9786585300'
+};
+// ════════════════════════════════════════
+
+const $=id=>document.getElementById(id);
+let espUrl=localStorage.getItem('espUrl')||'';
+let pollTimer=null,motorRunning=false,motorStartMs=0,tickTimer=null,notifications=[];
+
+// ── AUTH ──────────────────────────────
+function checkSession(){
+  const u=sessionStorage.getItem('aqUser');
+  if(u) showDashboard(u);
+}
+
+function doLogin(){
+  const u=$('loginUser').value.trim();
+  const p=$('loginPass').value;
+  if(USERS[u]&&USERS[u]===p){
+    sessionStorage.setItem('aqUser',u);
+    $('loginError').classList.remove('show');
+    showDashboard(u);
+  } else {
+    $('loginError').classList.add('show');
+    $('loginPass').value='';
+  }
+}
+
+function showDashboard(u){
+  $('loginPage').classList.add('hidden');
+  $('dashboard').classList.remove('hidden');
+  $('avatarTxt').textContent=u.substring(0,2).toUpperCase();
+  $('ipInput').value=espUrl.replace('http://','').replace('https://','');
+  if(espUrl){
+    $('cfgBox').style.display='none';
+    $('connBar').style.display='flex';
+    $('connBarIp').textContent=espUrl.replace('http://','').replace('https://','');
+    connect();
+  } else {
+    $('cfgBox').style.display='block';
+    $('connBar').style.display='none';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('aqUser');
+  if(pollTimer)clearInterval(pollTimer);
+  clearInterval(tickTimer);
+  $('dashboard').classList.add('hidden');
+  $('loginPage').classList.remove('hidden');
+  $('loginUser').value='';
+  $('loginPass').value='';
+}
+
+// ── IP CONFIG ─────────────────────────
+function hideCfg(){
+  if(!espUrl){alert('Enter and save your ESP IP first');return;}
+  $('cfgBox').style.display='none';
+  $('connBar').style.display='flex';
+  $('connBarIp').textContent=espUrl.replace('http://','').replace('https://','');
+}
+function showCfg(){
+  $('cfgBox').style.display='block';
+  $('connBar').style.display='none';
+}
+function saveAndConnect(){
+  let v=$('ipInput').value.trim().replace(/\/+$/,'');
+  if(!v)return;
+  if(!v.startsWith('http'))v='http://'+v;
+  espUrl=v;
+  localStorage.setItem('espUrl',espUrl);
+  hideCfg();
+  connect();
+}
+
+// ── POLLING ───────────────────────────
+function connect(){
+  if(pollTimer)clearInterval(pollTimer);
+  poll();
+  pollTimer=setInterval(poll,3000);
+}
+
+async function poll(){
+  if(!espUrl)return;
+  setConn('wait','Connecting...');
+  try{
+    const r=await fetch(espUrl+'/status',{signal:AbortSignal.timeout(4000)});
+    const d=await r.json();
+    setConn('ok','Connected');
+    applyStatus(d);
+    fetchHistory();
+    $('sUptime').textContent=d.uptime||'—';
+    $('sRssi').textContent=d.rssi||'—';
+  }catch(e){
+    setConn('err','Offline');
+    updateHealth(false);
+  }
+}
+
+function setConn(cls,txt){
+  $('connBadge').className='conn-badge '+cls;
+  $('connTxt').textContent=txt;
+}
+
+function applyStatus(d){
+  const wasRunning=motorRunning;
+  motorRunning=d.motor;
+  const auto=d.mode==='auto';
+  $('motorRunTxt').textContent=motorRunning?'Motor is running...':'Motor stopped';
+  if(motorRunning&&!wasRunning){motorStartMs=Date.now();startTick();pushNotif('Motor turned ON',true);}
+  if(!motorRunning&&wasRunning){clearInterval(tickTimer);$('motorRunTxt').textContent='Motor stopped';pushNotif('Motor turned OFF',false);}
+  $('autoToggle').className='toggle-sw '+(auto?'on':'off');
+  $('autoLabel').textContent=auto?'ON':'OFF';
+  $('autoLabel').style.color=auto?'var(--green)':'var(--txt3)';
+  $('autoActive').textContent=auto?'Active':'Inactive';
+  $('autoActive').style.color=auto?'var(--green)':'var(--txt3)';
+  $('modeSpan').textContent=auto?'Automatic':'Manual';
+  $('modeSpan').style.color=auto?'var(--green)':'var(--txt2)';
+  const lvl=d.waterLevel||0;
+  const pcts=[0,5,50,100],names=['Unknown','Empty','Filling','Full'],colors=['#94a3b8','#ef4444','#3b82f6','#16a34a'];
+  const pct=pcts[Math.min(lvl,3)];
+  $('lvlBar').style.width=pct+'%';
+  $('lvlBar').style.background=`linear-gradient(90deg,${colors[lvl]},${colors[lvl]}aa)`;
+  $('lvlPct').textContent=pct+'% Full';
+  $('lvlPct').style.color=colors[lvl];
+  $('lvlStatus').textContent=names[lvl]||'Unknown';
+  $('lvlStatus').style.color=colors[lvl];
+  $('sensorStatus').textContent=lvl>0?'OK':'Waiting';
+  $('rssiVal').textContent=d.rssi?d.rssi+' dBm':'—';
+  $('uptimeVal').textContent=d.uptime?d.uptime+'s':'—';
+  const tankH=96,baseY=108,fillH=Math.round(tankH*pct/100),fillY=baseY-fillH;
+  $('svgWater').setAttribute('y',fillY);$('svgWater').setAttribute('height',fillH);$('svgWater').style.fill=colors[lvl];
+  const wave=$('svgWave');
+  if(fillH>6){wave.style.display='';wave.setAttribute('d',`M15 ${fillY} Q30 ${fillY-3} 50 ${fillY} Q70 ${fillY+3} 85 ${fillY} L85 ${fillY+2} Q70 ${fillY+5} 50 ${fillY+2} Q30 ${fillY-1} 15 ${fillY+2} Z`);wave.style.fill=colors[lvl];}
+  else wave.style.display='none';
+  updateHealth(true,d);
+}
+
+function updateHealth(online,d){
+  const ok='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+  const warn='!';
+  if(!online){['hPump','hPower','hSensor','hWifi'].forEach(id=>{$(id).className='health-warn';$(id).innerHTML=warn;});return;}
+  $('hPump').className='health-ok';$('hPump').innerHTML=ok;
+  $('hPower').className='health-ok';$('hPower').innerHTML=ok;
+  $('hSensor').className=(d&&d.waterLevel>0)?'health-ok':'health-warn';$('hSensor').innerHTML=ok;
+  $('hWifi').className=(d&&parseInt(d.rssi)>-75)?'health-ok':'health-warn';$('hWifi').innerHTML=ok;
+}
+
+function startTick(){
+  clearInterval(tickTimer);
+  tickTimer=setInterval(()=>{
+    if(!motorRunning){clearInterval(tickTimer);return;}
+    $('motorRunTxt').textContent=`Running for ${Math.round((Date.now()-motorStartMs)/1000)}s`;
+  },1000);
+}
+
+async function fetchHistory(){
+  try{
+    const r=await fetch(espUrl+'/history',{signal:AbortSignal.timeout(4000)});
+    const d=await r.json();
+    renderHistory(d.log||[]);
+    $('sEvents').textContent=d.log?d.log.length:0;
+  }catch(e){}
+}
+
+function renderHistory(log){
+  if(!log.length)return;
+  const last=log[0];
+  const isOn=last.msg.includes('ON')||last.msg.includes('on]');
+  $('actSection').innerHTML=`<div class="act-item"><span>Motor <strong class="${isOn?'on':'off'}">${isOn?'ON':'OFF'}</strong>: ${last.ago}</span><span style="font-size:12px;color:var(--txt3)">${last.msg}</span></div><div class="act-item"><span>Status: Motor <strong class="${motorRunning?'on':'off'}">${motorRunning?'RUNNING':'STOPPED'}</strong></span></div>`;
+  $('logSection').innerHTML=log.slice(0,5).map(e=>{
+    const on=e.msg.includes('ON')||e.msg.includes('on]');
+    return`<div class="log-row"><span class="log-badge ${on?'on':'off'}">${on?'ON':'OFF'}</span><span class="log-text">${e.msg}</span><span class="log-time">${e.ago}</span></div>`;
+  }).join('');
+}
+
+function pushNotif(msg,isOn){
+  const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  notifications.unshift({msg,isOn,time:now});
+  if(notifications.length>5)notifications.pop();
+  $('notifCount').textContent=notifications.length+' alert'+(notifications.length>1?'s':'');
+  $('notifList').innerHTML=notifications.map(n=>`<div class="notif-item"><div class="notif-icon">${n.isOn?'▶':'■'}</div><div><div class="notif-msg">${n.msg}</div><div class="notif-time">${n.time}</div></div></div>`).join('');
+}
+
+async function motorCmd(cmd){
+  if(!espUrl){alert('Enter ESP IP first');return;}
+  $('btnOn').disabled=$('btnOff').disabled=true;
+  try{await fetch(espUrl+'/'+cmd,{signal:AbortSignal.timeout(4000)});setTimeout(poll,400);}
+  catch(e){alert('Command failed — check connection');}
+  finally{$('btnOn').disabled=$('btnOff').disabled=false;}
+}
+
+async function toggleAuto(){
+  if(!espUrl)return;
+  const newMode=$('autoToggle').className.includes('on')?'manual':'auto';
+  try{await fetch(espUrl+'/mode?mode='+newMode,{signal:AbortSignal.timeout(4000)});setTimeout(poll,300);}catch(e){}
+}
+
+function copyCmd(){
+  navigator.clipboard.writeText($('tunnelCmd').textContent).then(()=>{
+    const o=$('tunnelCmd').textContent;
+    $('tunnelCmd').textContent='✓ Copied!';
+    setTimeout(()=>$('tunnelCmd').textContent=o,1500);
+  });
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!$('loginPage').classList.contains('hidden'))doLogin();
+});
+
+checkSession();
+</script>
+</body>
+</html>
