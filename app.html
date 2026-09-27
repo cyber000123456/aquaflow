@@ -295,47 +295,57 @@ strong.off{color:var(--red)}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-const USERS = {
+var USERS = {
   "Adhiban": "9444937999",
   "Vijayakumar": "9444936999",
   "Vani": "9786585300"
 };
 
-const $ = id => document.getElementById(id);
-let motorRunning = false, motorStartMs = 0, tickTimer = null, notifications = [];
+var $ = function(id) {
+  return document.getElementById(id);
+};
 
-// AUTH
-function checkSession(){
-  const u = sessionStorage.getItem('aqUser');
-  if(u) showDashboard(u);
-}
+var motorRunning = false;
+var motorStartMs = 0;
+var tickTimer = null;
+var notifications = [];
 
-function doLogin(){
-  const u = $('loginUser').value.trim();
-  const p = $('loginPass').value;
-  if(USERS[u] && USERS[u] === p){
-    sessionStorage.setItem('aqUser', u);
-    $('loginError').classList.remove('show');
+function checkSession() {
+  var u = sessionStorage.getItem("aqUser");
+  if (u) {
     showDashboard(u);
-  } else {
-    $('loginError').classList.add('show');$('loginPass').value = '';
   }
 }
 
-function showDashboard(u){
-  $('loginPage').classList.add('hidden');
-  $('dashboard').classList.remove('hidden');$('avatarTxt').textContent = u.substring(0,2).toUpperCase();
+function doLogin() {
+  var u = $("loginUser").value.trim();
+  var p = $("loginPass").value.trim();
+  if (USERS[u] && USERS[u] === p) {
+    sessionStorage.setItem("aqUser", u);
+    $("loginError").classList.remove("show");
+    showDashboard(u);
+  } else {
+    $("loginError").classList.add("show");
+    $("loginPass").value = "";
+  }
 }
 
-function doLogout(){
-  sessionStorage.removeItem('aqUser');
+function showDashboard(u) {
+  $("loginPage").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("avatarTxt").textContent = u.substring(0, 2).toUpperCase();
+}
+
+function doLogout() {
+  sessionStorage.removeItem("aqUser");
   clearInterval(tickTimer);
-  $('dashboard').classList.add('hidden');$('loginPage').classList.remove('hidden');
-  $('loginUser').value = '';$('loginPass').value = '';
+  $("dashboard").classList.add("hidden");
+  $("loginPage").classList.remove("hidden");
+  $("loginUser").value = "";
+  $("loginPass").value = "";
 }
 
-// FIREBASE INITIALIZATION
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyBp8SULbQjx6K69nZ8YHY9_CjS_ZGSwPGo",
   authDomain: "aquaflow-9a306.firebaseapp.com",
   databaseURL: "https://aquaflow-9a306-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -348,123 +358,144 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-const db = firebase.database();
-const rootRef = db.ref('aquaflow');
+var db = firebase.database();
+var rootRef = db.ref("aquaflow");
 
-// WORLDWIDE CLOUD COMMANDS
 function turnMotorOn() {
-  rootRef.child('motorState').set(true);
+  rootRef.child("motorState").set(true);
 }
 
 function turnMotorOff() {
-  rootRef.child('motorState').set(false);
+  rootRef.child("motorState").set(false);
 }
 
 function toggleAuto() {
-  const isCurrentlyOn = $('autoToggle').className.includes('on');
-  rootRef.child('mode').set(isCurrentlyOn ? 'manual' : 'auto');
+  var isCurrentlyOn = $("autoToggle").className.indexOf("on") !== -1;
+  rootRef.child("mode").set(isCurrentlyOn ? "manual" : "auto");
 }
 
-// REALTIME DATABASE LISTENERS
-db.ref('.info/connected').on('value', snap => {
+db.ref(".info/connected").on("value", function(snap) {
   if (snap.val() === true) {
-    setConn('ok', 'Cloud Connected');
+    setConn("ok", "Cloud Connected");
   } else {
-    setConn('err', 'Reconnecting...');
+    setConn("err", "Reconnecting...");
   }
 });
 
-rootRef.on('value', snapshot => {
-  const data = snapshot.val() || {};
+rootRef.on("value", function(snapshot) {
+  var data = snapshot.val() || {};
   applyStatus(data);
 });
 
-function setConn(cls, txt){
-  $('connBadge').className = 'conn-badge ' + cls;
-  $('connTxt').textContent = txt;
+function setConn(cls, txt) {
+  $("connBadge").className = "conn-badge " + cls;
+  $("connTxt").textContent = txt;
 }
 
-function applyStatus(d){
-  const wasRunning = motorRunning;
-  motorRunning = d.motorState || false;
-  const auto = (d.mode === 'auto');
+function applyStatus(d) {
+  var wasRunning = motorRunning;
+  motorRunning = !!d.motorState;
+  var auto = (d.mode === "auto");
 
-  $('motorRunTxt').textContent = motorRunning ? 'Motor is running...' : 'Motor stopped';
+  $("motorRunTxt").textContent = motorRunning ? "Motor is running..." : "Motor stopped";
   
   if (motorRunning && !wasRunning) {
     motorStartMs = Date.now();
     startTick();
-    pushNotif('Motor turned ON', true);
+    pushNotif("Motor turned ON", true);
   }
   if (!motorRunning && wasRunning) {
     clearInterval(tickTimer);
-    $('motorRunTxt').textContent = 'Motor stopped';
-    pushNotif('Motor turned OFF', false);
+    $("motorRunTxt").textContent = "Motor stopped";
+    pushNotif("Motor turned OFF", false);
   }
 
-  $('autoToggle').className = 'toggle-sw ' + (auto ? 'on' : 'off');
-  $('autoLabel').textContent = auto ? 'ON' : 'OFF';
-  $('autoLabel').style.color = auto ? 'var(--green)' : 'var(--txt3)';
-  $('autoActive').textContent = auto ? 'Active' : 'Inactive';
-  $('autoActive').style.color = auto ? 'var(--green)' : 'var(--txt3)';
-  $('modeSpan').textContent = auto ? 'Automatic' : 'Manual';
-  $('modeSpan').style.color = auto ? 'var(--green)' : 'var(--txt2)';
+  $("autoToggle").className = "toggle-sw " + (auto ? "on" : "off");
+  $("autoLabel").textContent = auto ? "ON" : "OFF";
+  $("autoLabel").style.color = auto ? "var(--green)" : "var(--txt3)";
+  $("autoActive").textContent = auto ? "Active" : "Inactive";
+  $("autoActive").style.color = auto ? "var(--green)" : "var(--txt3)";
+  $("modeSpan").textContent = auto ? "Automatic" : "Manual";
+  $("modeSpan").style.color = auto ? "var(--green)" : "var(--txt2)";
 
-  const lvl = d.waterLevel || 0;
-  const pcts = [0, 5, 50, 100], names = ['Unknown', 'Empty', 'Filling', 'Full'], colors = ['#94a3b8', '#ef4444', '#3b82f6', '#16a34a'];
-  const pct = pcts[Math.min(lvl, 3)];
+  var lvl = d.waterLevel || 0;
+  var pcts = [0, 5, 50, 100];
+  var names = ["Unknown", "Empty", "Filling", "Full"];
+  var colors = ["#94a3b8", "#ef4444", "#3b82f6", "#16a34a"];
+  var pct = pcts[Math.min(lvl, 3)];
 
-  $('lvlBar').style.width = pct + '\%';$('lvlBar').style.background = `linear-gradient(90deg,${colors[lvl]},${colors[lvl]}aa)`;
-  $('lvlPct').textContent = pct + '\% Full';$('lvlPct').style.color = colors[lvl];
-  $('lvlStatus').textContent = names[lvl] \vert{}\vert{} 'Unknown';$('lvlStatus').style.color = colors[lvl];
-  $('sensorStatus').textContent = lvl > 0 ? 'OK' : 'Waiting';$('rssiVal').textContent = d.rssi ? d.rssi + ' dBm' : '—';
-  $('uptimeVal').textContent = d.uptime ? d.uptime + 's' : '—';
+  $("lvlBar").style.width = pct + "%";
+  $("lvlBar").style.background = "linear-gradient(90deg," + colors[lvl] + "," + colors[lvl] + "aa)";
+  $("lvlPct").textContent = pct + "% Full";
+  $("lvlPct").style.color = colors[lvl];
+  $("lvlStatus").textContent = names[lvl] || "Unknown";
+  $("lvlStatus").style.color = colors[lvl];
+  $("sensorStatus").textContent = lvl > 0 ? "OK" : "Waiting";
+  $("rssiVal").textContent = d.rssi ? d.rssi + " dBm" : "—";
+  $("uptimeVal").textContent = d.uptime ? d.uptime + "s" : "—";
 
-  const tankH = 96, baseY = 108, fillH = Math.round(tankH * pct / 100), fillY = baseY - fillH;
-  $('svgWater').setAttribute('y', fillY);
-  $('svgWater').setAttribute('height', fillH);$('svgWater').style.fill = colors[lvl];
+  var tankH = 96;
+  var baseY = 108;
+  var fillH = Math.round(tankH * pct / 100);
+  var fillY = baseY - fillH;
+  $("svgWater").setAttribute("y", fillY);
+  $("svgWater").setAttribute("height", fillH);
+  $("svgWater").style.fill = colors[lvl];
 
-  const wave = $('svgWave');
+  var wave = $("svgWave");
   if (fillH > 6) {
-    wave.style.display = '';
-    wave.setAttribute('d', `M15 ${fillY} Q30 ${fillY-3} 50 ${fillY} Q70 ${fillY+3} 85 ${fillY} L85 ${fillY+2} Q70 ${fillY+5} 50 ${fillY+2} Q30 ${fillY-1} 15 ${fillY+2} Z`);
+    wave.style.display = "";
+    wave.setAttribute("d", "M15 " + fillY + " Q30 " + (fillY - 3) + " 50 " + fillY + " Q70 " + (fillY + 3) + " 85 " + fillY + " L85 " + (fillY + 2) + " Q70 " + (fillY + 5) + " 50 " + (fillY + 2) + " Q30 " + (fillY - 1) + " 15 " + (fillY + 2) + " Z");
     wave.style.fill = colors[lvl];
   } else {
-    wave.style.display = 'none';
+    wave.style.display = "none";
   }
 
-  $('sUptime').textContent = d.uptime ? d.uptime + 's' : '—';
-  $('sRssi').textContent = d.rssi ? d.rssi : '—';
+  $("sUptime").textContent = d.uptime ? d.uptime + "s" : "—";
+  $("sRssi").textContent = d.rssi ? d.rssi : "—";
 }
 
-function startTick(){
+function startTick() {
   clearInterval(tickTimer);
-  tickTimer = setInterval(() => {
+  tickTimer = setInterval(function() {
     if (!motorRunning) {
       clearInterval(tickTimer);
       return;
     }
-    $('motorRunTxt').textContent = `Running for ${Math.round((Date.now() - motorStartMs) / 1000)}s`;
+    $("motorRunTxt").textContent = "Running for " + Math.round((Date.now() - motorStartMs) / 1000) + "s";
   }, 1000);
 }
 
-function pushNotif(msg, isOn){
-  const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  notifications.unshift({ msg, isOn, time: now });
-  if (notifications.length > 5) notifications.pop();
-  $('notifCount').textContent = notifications.length + ' alert' + (notifications.length > 1 ? 's' : '');$('notifList').innerHTML = notifications.map(n => 
-    `<div class="notif-item"><div class="notif-icon">${n.isOn ? '▶' : '■'}</div><div><div class="notif-msg">${n.msg}</div><div class="notif-time">${n.time}</div></div></div>`
-  ).join('');
+function pushNotif(msg, isOn) {
+  var now = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  notifications.unshift({ msg: msg, isOn: isOn, time: now });
+  if (notifications.length > 5) {
+    notifications.pop();
+  }
+  $("notifCount").textContent = notifications.length + " alert" + (notifications.length > 1 ? "s" : "");
+  
+  var notifHtml = "";
+  for (var i = 0; i < notifications.length; i++) {
+    var n = notifications[i];
+    notifHtml += '<div class="notif-item"><div class="notif-icon">' + (n.isOn ? "▶" : "■") + '</div><div><div class="notif-msg">' + n.msg + '</div><div class="notif-time">' + n.time + '</div></div></div>';
+  }
+  $("notifList").innerHTML = notifHtml;
 
-  $('sEvents').textContent = notifications.length;
-  $('actSection').innerHTML = `<div class="act-item"><span>Status: Motor <strong class="${motorRunning ? 'on' : 'off'}">${motorRunning ? 'RUNNING' : 'STOPPED'}</strong></span></div>`;
-  $('logSection').innerHTML = notifications.map(e => 
-    `<div class="log-row"><span class="log-badge ${e.isOn ? 'on' : 'off'}">${e.isOn ? 'ON' : 'OFF'}</span><span class="log-text">${e.msg}</span><span class="log-time">${e.time}</span></div>`
-  ).join('');
+  $("sEvents").textContent = notifications.length;
+  $("actSection").innerHTML = '<div class="act-item"><span>Status: Motor <strong class="' + (motorRunning ? "on" : "off") + '">' + (motorRunning ? "RUNNING" : "STOPPED") + "</strong></span></div>";
+  
+  var logHtml = "";
+  for (var j = 0; j < notifications.length; j++) {
+    var e = notifications[j];
+    logHtml += '<div class="log-row"><span class="log-badge ' + (e.isOn ? "on" : "off") + '">' + (e.isOn ? "ON" : "OFF") + '</span><span class="log-text">' + e.msg + '</span><span class="log-time">' + e.time + '</span></div>';
+  }
+  $("logSection").innerHTML = logHtml;
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !$('loginPage').classList.contains('hidden')) doLogin();
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !$("loginPage").classList.contains("hidden")) {
+    doLogin();
+  }
 });
 
 checkSession();
