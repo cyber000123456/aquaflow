@@ -66,16 +66,6 @@ html,body{background:var(--bg);font-family:var(--font);color:var(--txt);min-heig
 .card{background:var(--white);border-radius:12px;border:1px solid var(--bd);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .card-title{font-size:15px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px;margin-bottom:16px}
 
-/* CONFIG */
-.cfg-row{display:flex;gap:8px;flex-wrap:wrap}
-.cfg-row input{flex:1;min-width:200px;border:1px solid var(--bd2);border-radius:8px;font-family:var(--font);font-size:13px;padding:9px 14px;background:var(--s1);color:var(--txt);outline:none;transition:.15s}
-.cfg-row input:focus{border-color:var(--blue2)}
-.cfg-row input::placeholder{color:var(--txt3)}
-.btn-connect{background:var(--blue2);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;padding:9px 20px;cursor:pointer;white-space:nowrap}
-.btn-connect:hover{background:var(--blue)}
-.conn-bar{background:var(--white);border:1px solid var(--bd);border-radius:12px;padding:12px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:none;align-items:center;justify-content:space-between;gap:12px}
-.change-ip-btn{background:var(--blue-l);color:var(--blue2);border:1px solid #bfdbfe;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)}
-
 /* TANK */
 .tank-layout{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 .tank-progress-col{flex:1;min-width:200px;display:flex;flex-direction:column;gap:12px}
@@ -146,11 +136,6 @@ strong.off{color:var(--red)}
 .sstat{background:var(--white);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:center}
 .sstat-v{font-size:18px;font-weight:700;margin-bottom:2px}
 .sstat-l{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
-.global-step{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px;line-height:1.5}
-.global-step:last-child{border-bottom:none}
-.gs-num{width:20px;height:20px;border-radius:50%;background:var(--blue-l);color:var(--blue2);font-size:11px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.code-pill{background:var(--s1);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;color:var(--blue2);word-break:break-all;margin:6px 0;cursor:pointer}
-.code-pill:hover{border-color:var(--blue2)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
 .hidden{display:none!important}
@@ -188,7 +173,7 @@ strong.off{color:var(--red)}
   <a class="logo" href="#"><div class="logo-icon">💧</div><div class="logo-text">AQUA<span>FLOW</span></div></a>
   <div class="topbar-title">Motor Control &amp; Tank Status</div>
   <div class="topbar-right">
-    <div class="conn-badge wait" id="connBadge"><div class="conn-dot"></div><span id="connTxt">Connecting...</span></div>
+    <div class="conn-badge wait" id="connBadge"><div class="conn-dot"></div><span id="connTxt">Connecting to Cloud...</span></div>
     <button class="logout-btn" onclick="doLogout()">Logout</button>
     <div class="avatar" id="avatarTxt">AD</div>
   </div>
@@ -196,27 +181,6 @@ strong.off{color:var(--red)}
 
 <div class="main">
 <div class="left-col">
-
-  <!-- IP Config box -->
-  <div class="card" style="padding:16px 20px" id="cfgBox">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:600;color:var(--txt2)">ESP Connection</span>
-      <button onclick="hideCfg()" style="background:none;border:none;font-size:12px;color:var(--txt3);cursor:pointer">✕ Hide</button>
-    </div>
-    <div class="cfg-row">
-      <input id="ipInput" type="text" placeholder="192.168.0.159  or  tunnel URL"/>
-      <button class="btn-connect" onclick="saveAndConnect()">Save &amp; Connect</button>
-    </div>
-  </div>
-
-  <!-- Connected bar (auto shown after IP saved) -->
-  <div class="conn-bar" id="connBar">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:13px;color:var(--txt2)">Auto-connecting to:</span>
-      <span style="font-size:13px;font-weight:600;color:var(--blue2)" id="connBarIp">—</span>
-    </div>
-    <button class="change-ip-btn" onclick="showCfg()">Change IP</button>
-  </div>
 
   <!-- Tank -->
   <div class="card">
@@ -278,8 +242,8 @@ strong.off{color:var(--red)}
       </div>
       <div class="manual-box">
         <div class="manual-title">MANUAL</div>
-        <button class="mbtn mbtn-on" id="btnOn" onclick="motorCmd('on')">▶ MANUAL ON</button>
-        <button class="mbtn mbtn-off" id="btnOff" onclick="motorCmd('off')">■ MANUAL OFF</button>
+        <button class="mbtn mbtn-on" id="btnOn" onclick="turnMotorOn()">▶ MANUAL ON</button>
+        <button class="mbtn mbtn-off" id="btnOff" onclick="turnMotorOff()">■ MANUAL OFF</button>
         <div style="text-align:center;font-size:12px;color:var(--txt3)" id="motorRunTxt">Motor stopped</div>
       </div>
     </div>
@@ -306,7 +270,7 @@ strong.off{color:var(--red)}
     <div class="health-item"><div class="health-icon">⚙️</div><div class="health-label">Pump Status</div><div class="health-ok" id="hPump">✓</div></div>
     <div class="health-item"><div class="health-icon">⚡</div><div class="health-label">Power Supply</div><div class="health-ok" id="hPower">✓</div></div>
     <div class="health-item"><div class="health-icon">📡</div><div class="health-label">Sensor Status</div><div class="health-ok" id="hSensor">✓</div></div>
-    <div class="health-item"><div class="health-icon">📶</div><div class="health-label">WiFi Signal</div><div class="health-ok" id="hWifi">✓</div></div>
+    <div class="health-item"><div class="health-icon">📶</div><div class="health-label">Cloud Sync</div><div class="health-ok" id="hWifi">✓</div></div>
   </div>
 
   <!-- Stats -->
@@ -322,238 +286,187 @@ strong.off{color:var(--red)}
     <div id="notifList"><div style="font-size:13px;color:var(--txt3);text-align:center;padding:12px 0">No notifications yet</div></div>
   </div>
 
-  <!-- Global Access -->
-  <div class="card">
-    <div class="card-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      Access From Anywhere
-    </div>
-    <div class="global-step"><div class="gs-num">1</div><div>Run this on your PC to create a tunnel:</div></div>
-    <div class="code-pill" onclick="copyCmd()" id="tunnelCmd">cloudflared tunnel --url http://192.168.0.159</div>
-    <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">↑ click to copy</div>
-    <div class="global-step"><div class="gs-num">2</div><div>Paste the <strong>trycloudflare.com</strong> URL in the IP box and save.</div></div>
-    <div class="global-step"><div class="gs-num">3</div><div>Bookmark this page on your phone — works worldwide forever.</div></div>
-  </div>
+</div>
+</div>
+</div>
 
-</div>
-</div>
-</div>
+<!-- Firebase 8.x SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// ╔══════════════════════════════════════╗
-// ║   YOUR LOGIN CREDENTIALS             ║
-// ║   Change username and password here  ║
-// ╚══════════════════════════════════════╝
 const USERS = {
   'Adhiban':     '9444937999',
   'Vijayakumar': '9444936999',
   'Vani':        '9786585300'
 };
-// ════════════════════════════════════════
 
-const $=id=>document.getElementById(id);
-let espUrl=localStorage.getItem('espUrl')||'';
-let pollTimer=null,motorRunning=false,motorStartMs=0,tickTimer=null,notifications=[];
+const $ = id => document.getElementById(id);
+let motorRunning = false, motorStartMs = 0, tickTimer = null, notifications = [];
 
 // ── AUTH ──────────────────────────────
 function checkSession(){
-  const u=sessionStorage.getItem('aqUser');
+  const u = sessionStorage.getItem('aqUser');
   if(u) showDashboard(u);
 }
 
 function doLogin(){
-  const u=$('loginUser').value.trim();
-  const p=$('loginPass').value;
-  if(USERS[u]&&USERS[u]===p){
-    sessionStorage.setItem('aqUser',u);
+  const u = $('loginUser').value.trim();
+  const p = $('loginPass').value;
+  if(USERS[u] && USERS[u] === p){
+    sessionStorage.setItem('aqUser', u);
     $('loginError').classList.remove('show');
     showDashboard(u);
   } else {
-    $('loginError').classList.add('show');
-    $('loginPass').value='';
+    $('loginError').classList.add('show');$('loginPass').value = '';
   }
 }
 
 function showDashboard(u){
   $('loginPage').classList.add('hidden');
-  $('dashboard').classList.remove('hidden');
-  $('avatarTxt').textContent=u.substring(0,2).toUpperCase();
-  $('ipInput').value=espUrl.replace('http://','').replace('https://','');
-  if(espUrl){
-    $('cfgBox').style.display='none';
-    $('connBar').style.display='flex';
-    $('connBarIp').textContent=espUrl.replace('http://','').replace('https://','');
-    connect();
-  } else {
-    $('cfgBox').style.display='block';
-    $('connBar').style.display='none';
-  }
+  $('dashboard').classList.remove('hidden');$('avatarTxt').textContent = u.substring(0,2).toUpperCase();
 }
 
 function doLogout(){
   sessionStorage.removeItem('aqUser');
-  if(pollTimer)clearInterval(pollTimer);
   clearInterval(tickTimer);
-  $('dashboard').classList.add('hidden');
-  $('loginPage').classList.remove('hidden');
-  $('loginUser').value='';
-  $('loginPass').value='';
+  $('dashboard').classList.add('hidden');$('loginPage').classList.remove('hidden');
+  $('loginUser').value = '';$('loginPass').value = '';
 }
 
-// ── IP CONFIG ─────────────────────────
-function hideCfg(){
-  if(!espUrl){alert('Enter and save your ESP IP first');return;}
-  $('cfgBox').style.display='none';
-  $('connBar').style.display='flex';
-  $('connBarIp').textContent=espUrl.replace('http://','').replace('https://','');
+// ── FIREBASE CONFIGURATION ────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBp8SULbQjx6K69nZ8YHY9_CjS_ZGSwPGo",
+  authDomain: "aquaflow-9a306.firebaseapp.com",
+  databaseURL: "https://aquaflow-9a306-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "aquaflow-9a306",
+  storageBucket: "aquaflow-9a306.firebasestorage.app",
+  messagingSenderId: "1804961362747",
+  appId: "1:1804961362747:web:3849238a9ca8d757ddfd1e"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
 }
-function showCfg(){
-  $('cfgBox').style.display='block';
-  $('connBar').style.display='none';
-}
-function saveAndConnect(){
-  let v=$('ipInput').value.trim().replace(/\/+$/,'');
-  if(!v)return;
-  if(!v.startsWith('http'))v='http://'+v;
-  espUrl=v;
-  localStorage.setItem('espUrl',espUrl);
-  hideCfg();
-  connect();
+const db = firebase.database();
+const rootRef = db.ref('aquaflow');
+
+// ── WORLDWIDE CLOUD COMMANDS ──────────
+function turnMotorOn() {
+  rootRef.child('motorState').set(true);
 }
 
-// ── POLLING ───────────────────────────
-function connect(){
-  if(pollTimer)clearInterval(pollTimer);
-  poll();
-  pollTimer=setInterval(poll,3000);
+function turnMotorOff() {
+  rootRef.child('motorState').set(false);
 }
 
-async function poll(){
-  if(!espUrl)return;
-  setConn('wait','Connecting...');
-  try{
-    const r=await fetch(espUrl+'/status',{signal:AbortSignal.timeout(4000)});
-    const d=await r.json();
-    setConn('ok','Connected');
-    applyStatus(d);
-    fetchHistory();
-    $('sUptime').textContent=d.uptime||'—';
-    $('sRssi').textContent=d.rssi||'—';
-  }catch(e){
-    setConn('err','Offline');
-    updateHealth(false);
+function toggleAuto() {
+  const isCurrentlyOn = $('autoToggle').className.includes('on');
+  rootRef.child('mode').set(isCurrentlyOn ? 'manual' : 'auto');
+}
+
+// ── REALTIME CLOUD LISTENERS ──────────
+// Connection monitor
+db.ref('.info/connected').on('value', snap => {
+  if (snap.val() === true) {
+    setConn('ok', 'Cloud Connected');
+  } else {
+    setConn('err', 'Reconnecting...');
   }
-}
+});
 
-function setConn(cls,txt){
-  $('connBadge').className='conn-badge '+cls;
-  $('connTxt').textContent=txt;
+// Full telemetry sync
+rootRef.on('value', snapshot => {
+  const data = snapshot.val() || {};
+  applyStatus(data);
+});
+
+function setConn(cls, txt){
+  $('connBadge').className = 'conn-badge ' + cls;
+  $('connTxt').textContent = txt;
 }
 
 function applyStatus(d){
-  const wasRunning=motorRunning;
-  motorRunning=d.motor;
-  const auto=d.mode==='auto';
-  $('motorRunTxt').textContent=motorRunning?'Motor is running...':'Motor stopped';
-  if(motorRunning&&!wasRunning){motorStartMs=Date.now();startTick();pushNotif('Motor turned ON',true);}
-  if(!motorRunning&&wasRunning){clearInterval(tickTimer);$('motorRunTxt').textContent='Motor stopped';pushNotif('Motor turned OFF',false);}
-  $('autoToggle').className='toggle-sw '+(auto?'on':'off');
-  $('autoLabel').textContent=auto?'ON':'OFF';
-  $('autoLabel').style.color=auto?'var(--green)':'var(--txt3)';
-  $('autoActive').textContent=auto?'Active':'Inactive';
-  $('autoActive').style.color=auto?'var(--green)':'var(--txt3)';
-  $('modeSpan').textContent=auto?'Automatic':'Manual';
-  $('modeSpan').style.color=auto?'var(--green)':'var(--txt2)';
-  const lvl=d.waterLevel||0;
-  const pcts=[0,5,50,100],names=['Unknown','Empty','Filling','Full'],colors=['#94a3b8','#ef4444','#3b82f6','#16a34a'];
-  const pct=pcts[Math.min(lvl,3)];
-  $('lvlBar').style.width=pct+'%';
-  $('lvlBar').style.background=`linear-gradient(90deg,${colors[lvl]},${colors[lvl]}aa)`;
-  $('lvlPct').textContent=pct+'% Full';
-  $('lvlPct').style.color=colors[lvl];
-  $('lvlStatus').textContent=names[lvl]||'Unknown';
-  $('lvlStatus').style.color=colors[lvl];
-  $('sensorStatus').textContent=lvl>0?'OK':'Waiting';
-  $('rssiVal').textContent=d.rssi?d.rssi+' dBm':'—';
-  $('uptimeVal').textContent=d.uptime?d.uptime+'s':'—';
-  const tankH=96,baseY=108,fillH=Math.round(tankH*pct/100),fillY=baseY-fillH;
-  $('svgWater').setAttribute('y',fillY);$('svgWater').setAttribute('height',fillH);$('svgWater').style.fill=colors[lvl];
-  const wave=$('svgWave');
-  if(fillH>6){wave.style.display='';wave.setAttribute('d',`M15 ${fillY} Q30 ${fillY-3} 50 ${fillY} Q70 ${fillY+3} 85 ${fillY} L85 ${fillY+2} Q70 ${fillY+5} 50 ${fillY+2} Q30 ${fillY-1} 15 ${fillY+2} Z`);wave.style.fill=colors[lvl];}
-  else wave.style.display='none';
-  updateHealth(true,d);
-}
+  const wasRunning = motorRunning;
+  motorRunning = d.motorState || false;
+  const auto = (d.mode === 'auto');
 
-function updateHealth(online,d){
-  const ok='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-  const warn='!';
-  if(!online){['hPump','hPower','hSensor','hWifi'].forEach(id=>{$(id).className='health-warn';$(id).innerHTML=warn;});return;}
-  $('hPump').className='health-ok';$('hPump').innerHTML=ok;
-  $('hPower').className='health-ok';$('hPower').innerHTML=ok;
-  $('hSensor').className=(d&&d.waterLevel>0)?'health-ok':'health-warn';$('hSensor').innerHTML=ok;
-  $('hWifi').className=(d&&parseInt(d.rssi)>-75)?'health-ok':'health-warn';$('hWifi').innerHTML=ok;
+  $('motorRunTxt').textContent = motorRunning ? 'Motor is running...' : 'Motor stopped';
+  
+  if (motorRunning && !wasRunning) {
+    motorStartMs = Date.now();
+    startTick();
+    pushNotif('Motor turned ON (Cloud)', true);
+  }
+  if (!motorRunning && wasRunning) {
+    clearInterval(tickTimer);
+    $('motorRunTxt').textContent = 'Motor stopped';
+    pushNotif('Motor turned OFF (Cloud)', false);
+  }
+
+  $('autoToggle').className = 'toggle-sw ' + (auto ? 'on' : 'off');
+  $('autoLabel').textContent = auto ? 'ON' : 'OFF';
+  $('autoLabel').style.color = auto ? 'var(--green)' : 'var(--txt3)';
+  $('autoActive').textContent = auto ? 'Active' : 'Inactive';
+  $('autoActive').style.color = auto ? 'var(--green)' : 'var(--txt3)';
+  $('modeSpan').textContent = auto ? 'Automatic' : 'Manual';
+  $('modeSpan').style.color = auto ? 'var(--green)' : 'var(--txt2)';
+
+  const lvl = d.waterLevel || 0;
+  const pcts = [0, 5, 50, 100], names = ['Unknown', 'Empty', 'Filling', 'Full'], colors = ['#94a3b8', '#ef4444', '#3b82f6', '#16a34a'];
+  const pct = pcts[Math.min(lvl, 3)];
+
+  $('lvlBar').style.width = pct + '\%';$('lvlBar').style.background = `linear-gradient(90deg,${colors[lvl]},${colors[lvl]}aa)`;
+  $('lvlPct').textContent = pct + '\% Full';$('lvlPct').style.color = colors[lvl];
+  $('lvlStatus').textContent = names[lvl] \vert{}\vert{} 'Unknown';$('lvlStatus').style.color = colors[lvl];
+  $('sensorStatus').textContent = lvl > 0 ? 'OK' : 'Waiting';$('rssiVal').textContent = d.rssi ? d.rssi + ' dBm' : '—';
+  $('uptimeVal').textContent = d.uptime ? d.uptime + 's' : '—';
+
+  const tankH = 96, baseY = 108, fillH = Math.round(tankH * pct / 100), fillY = baseY - fillH;
+  $('svgWater').setAttribute('y', fillY);
+  $('svgWater').setAttribute('height', fillH);$('svgWater').style.fill = colors[lvl];
+
+  const wave = $('svgWave');
+  if (fillH > 6) {
+    wave.style.display = '';
+    wave.setAttribute('d', `M15 ${fillY} Q30 ${fillY-3} 50 ${fillY} Q70 ${fillY+3} 85 ${fillY} L85 ${fillY+2} Q70 ${fillY+5} 50 ${fillY+2} Q30 ${fillY-1} 15 ${fillY+2} Z`);
+    wave.style.fill = colors[lvl];
+  } else {
+    wave.style.display = 'none';
+  }
+
+  $('sUptime').textContent = d.uptime ? d.uptime + 's' : '—';
+  $('sRssi').textContent = d.rssi ? d.rssi : '—';
 }
 
 function startTick(){
   clearInterval(tickTimer);
-  tickTimer=setInterval(()=>{
-    if(!motorRunning){clearInterval(tickTimer);return;}
-    $('motorRunTxt').textContent=`Running for ${Math.round((Date.now()-motorStartMs)/1000)}s`;
-  },1000);
+  tickTimer = setInterval(() => {
+    if (!motorRunning) {
+      clearInterval(tickTimer);
+      return;
+    }
+    $('motorRunTxt').textContent = `Running for ${Math.round((Date.now() - motorStartMs) / 1000)}s`;
+  }, 1000);
 }
 
-async function fetchHistory(){
-  try{
-    const r=await fetch(espUrl+'/history',{signal:AbortSignal.timeout(4000)});
-    const d=await r.json();
-    renderHistory(d.log||[]);
-    $('sEvents').textContent=d.log?d.log.length:0;
-  }catch(e){}
+function pushNotif(msg, isOn){
+  const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  notifications.unshift({ msg, isOn, time: now });
+  if (notifications.length > 5) notifications.pop();
+  $('notifCount').textContent = notifications.length + ' alert' + (notifications.length > 1 ? 's' : '');$('notifList').innerHTML = notifications.map(n => 
+    `<div class="notif-item"><div class="notif-icon">${n.isOn ? '▶' : '■'}</div><div><div class="notif-msg">${n.msg}</div><div class="notif-time">${n.time}</div></div></div>`
+  ).join('');
+
+  $('sEvents').textContent = notifications.length;
+  $('actSection').innerHTML = `<div class="act-item"><span>Status: Motor <strong class="${motorRunning ? 'on' : 'off'}">${motorRunning ? 'RUNNING' : 'STOPPED'}</strong></span></div>`;
+  $('logSection').innerHTML = notifications.map(e => 
+    `<div class="log-row"><span class="log-badge ${e.isOn ? 'on' : 'off'}">${e.isOn ? 'ON' : 'OFF'}</span><span class="log-text">${e.msg}</span><span class="log-time">${e.time}</span></div>`
+  ).join('');
 }
 
-function renderHistory(log){
-  if(!log.length)return;
-  const last=log[0];
-  const isOn=last.msg.includes('ON')||last.msg.includes('on]');
-  $('actSection').innerHTML=`<div class="act-item"><span>Motor <strong class="${isOn?'on':'off'}">${isOn?'ON':'OFF'}</strong>: ${last.ago}</span><span style="font-size:12px;color:var(--txt3)">${last.msg}</span></div><div class="act-item"><span>Status: Motor <strong class="${motorRunning?'on':'off'}">${motorRunning?'RUNNING':'STOPPED'}</strong></span></div>`;
-  $('logSection').innerHTML=log.slice(0,5).map(e=>{
-    const on=e.msg.includes('ON')||e.msg.includes('on]');
-    return`<div class="log-row"><span class="log-badge ${on?'on':'off'}">${on?'ON':'OFF'}</span><span class="log-text">${e.msg}</span><span class="log-time">${e.ago}</span></div>`;
-  }).join('');
-}
-
-function pushNotif(msg,isOn){
-  const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  notifications.unshift({msg,isOn,time:now});
-  if(notifications.length>5)notifications.pop();
-  $('notifCount').textContent=notifications.length+' alert'+(notifications.length>1?'s':'');
-  $('notifList').innerHTML=notifications.map(n=>`<div class="notif-item"><div class="notif-icon">${n.isOn?'▶':'■'}</div><div><div class="notif-msg">${n.msg}</div><div class="notif-time">${n.time}</div></div></div>`).join('');
-}
-
-async function motorCmd(cmd){
-  if(!espUrl){alert('Enter ESP IP first');return;}
-  $('btnOn').disabled=$('btnOff').disabled=true;
-  try{await fetch(espUrl+'/'+cmd,{signal:AbortSignal.timeout(4000)});setTimeout(poll,400);}
-  catch(e){alert('Command failed — check connection');}
-  finally{$('btnOn').disabled=$('btnOff').disabled=false;}
-}
-
-async function toggleAuto(){
-  if(!espUrl)return;
-  const newMode=$('autoToggle').className.includes('on')?'manual':'auto';
-  try{await fetch(espUrl+'/mode?mode='+newMode,{signal:AbortSignal.timeout(4000)});setTimeout(poll,300);}catch(e){}
-}
-
-function copyCmd(){
-  navigator.clipboard.writeText($('tunnelCmd').textContent).then(()=>{
-    const o=$('tunnelCmd').textContent;
-    $('tunnelCmd').textContent='✓ Copied!';
-    setTimeout(()=>$('tunnelCmd').textContent=o,1500);
-  });
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!$('loginPage').classList.contains('hidden'))doLogin();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !$('loginPage').classList.contains('hidden')) doLogin();
 });
 
 checkSession();
