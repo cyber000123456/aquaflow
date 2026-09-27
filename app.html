@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f0f4f8">
 <title>AquaFlow — Smart Water Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -296,15 +296,15 @@ strong.off{color:var(--red)}
 
 <script>
 const USERS = {
-  'Adhiban':     '9444937999',
-  'Vijayakumar': '9444936999',
-  'Vani':        '9786585300'
+  "Adhiban": "9444937999",
+  "Vijayakumar": "9444936999",
+  "Vani": "9786585300"
 };
 
 const $ = id => document.getElementById(id);
 let motorRunning = false, motorStartMs = 0, tickTimer = null, notifications = [];
 
-// ── AUTH ──────────────────────────────
+// AUTH
 function checkSession(){
   const u = sessionStorage.getItem('aqUser');
   if(u) showDashboard(u);
@@ -334,7 +334,7 @@ function doLogout(){
   $('loginUser').value = '';$('loginPass').value = '';
 }
 
-// ── FIREBASE CONFIGURATION ────────────
+// FIREBASE INITIALIZATION
 const firebaseConfig = {
   apiKey: "AIzaSyBp8SULbQjx6K69nZ8YHY9_CjS_ZGSwPGo",
   authDomain: "aquaflow-9a306.firebaseapp.com",
@@ -351,7 +351,7 @@ if (!firebase.apps.length) {
 const db = firebase.database();
 const rootRef = db.ref('aquaflow');
 
-// ── WORLDWIDE CLOUD COMMANDS ──────────
+// WORLDWIDE CLOUD COMMANDS
 function turnMotorOn() {
   rootRef.child('motorState').set(true);
 }
@@ -365,8 +365,7 @@ function toggleAuto() {
   rootRef.child('mode').set(isCurrentlyOn ? 'manual' : 'auto');
 }
 
-// ── REALTIME CLOUD LISTENERS ──────────
-// Connection monitor
+// REALTIME DATABASE LISTENERS
 db.ref('.info/connected').on('value', snap => {
   if (snap.val() === true) {
     setConn('ok', 'Cloud Connected');
@@ -375,7 +374,6 @@ db.ref('.info/connected').on('value', snap => {
   }
 });
 
-// Full telemetry sync
 rootRef.on('value', snapshot => {
   const data = snapshot.val() || {};
   applyStatus(data);
@@ -396,12 +394,12 @@ function applyStatus(d){
   if (motorRunning && !wasRunning) {
     motorStartMs = Date.now();
     startTick();
-    pushNotif('Motor turned ON (Cloud)', true);
+    pushNotif('Motor turned ON', true);
   }
   if (!motorRunning && wasRunning) {
     clearInterval(tickTimer);
     $('motorRunTxt').textContent = 'Motor stopped';
-    pushNotif('Motor turned OFF (Cloud)', false);
+    pushNotif('Motor turned OFF', false);
   }
 
   $('autoToggle').className = 'toggle-sw ' + (auto ? 'on' : 'off');
