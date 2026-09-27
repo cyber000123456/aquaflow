@@ -295,21 +295,6 @@ strong.off{color:var(--red)}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-var USERS = {
-  "Adhiban": "9444937999",
-  "Vijayakumar": "9444936999",
-  "Vani": "9786585300"
-};
-
-var $ = function(id) {
-  return document.getElementById(id);
-};
-
-var motorRunning = false;
-var motorStartMs = 0;
-var tickTimer = null;
-var notifications = [];
-
 function checkSession() {
   var u = sessionStorage.getItem("aqUser");
   if (u) {
@@ -318,32 +303,40 @@ function checkSession() {
 }
 
 function doLogin() {
-  var u = $("loginUser").value.trim();
-  var p = $("loginPass").value.trim();
-  if (USERS[u] && USERS[u] === p) {
+  var u = document.getElementById("loginUser").value.trim();
+  var p = document.getElementById("loginPass").value.trim();
+  
+  if ((u === "Adhiban" && p === "9444937999") ||
+      (u === "Vijayakumar" && p === "9444936999") ||
+      (u === "Vani" && p === "9786585300")) {
     sessionStorage.setItem("aqUser", u);
-    $("loginError").classList.remove("show");
+    document.getElementById("loginError").classList.remove("show");
     showDashboard(u);
   } else {
-    $("loginError").classList.add("show");
-    $("loginPass").value = "";
+    document.getElementById("loginError").classList.add("show");
+    document.getElementById("loginPass").value = "";
   }
 }
 
 function showDashboard(u) {
-  $("loginPage").classList.add("hidden");
-  $("dashboard").classList.remove("hidden");
-  $("avatarTxt").textContent = u.substring(0, 2).toUpperCase();
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("avatarTxt").textContent = u.substring(0, 2).toUpperCase();
 }
 
 function doLogout() {
   sessionStorage.removeItem("aqUser");
   clearInterval(tickTimer);
-  $("dashboard").classList.add("hidden");
-  $("loginPage").classList.remove("hidden");
-  $("loginUser").value = "";
-  $("loginPass").value = "";
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("loginPage").classList.remove("hidden");
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginPass").value = "";
 }
+
+var motorRunning = false;
+var motorStartMs = 0;
+var tickTimer = null;
+var notifications = [];
 
 var firebaseConfig = {
   apiKey: "AIzaSyBp8SULbQjx6K69nZ8YHY9_CjS_ZGSwPGo",
@@ -370,34 +363,29 @@ function turnMotorOff() {
 }
 
 function toggleAuto() {
-  var isCurrentlyOn = $("autoToggle").className.indexOf("on") !== -1;
+  var isCurrentlyOn = document.getElementById("autoToggle").className.indexOf("on") !== -1;
   rootRef.child("mode").set(isCurrentlyOn ? "manual" : "auto");
 }
 
 db.ref(".info/connected").on("value", function(snap) {
+  var badge = document.getElementById("connBadge");
+  var txt = document.getElementById("connTxt");
   if (snap.val() === true) {
-    setConn("ok", "Cloud Connected");
+    badge.className = "conn-badge ok";
+    txt.textContent = "Cloud Connected";
   } else {
-    setConn("err", "Reconnecting...");
+    badge.className = "conn-badge err";
+    txt.textContent = "Reconnecting...";
   }
 });
 
 rootRef.on("value", function(snapshot) {
-  var data = snapshot.val() || {};
-  applyStatus(data);
-});
-
-function setConn(cls, txt) {
-  $("connBadge").className = "conn-badge " + cls;
-  $("connTxt").textContent = txt;
-}
-
-function applyStatus(d) {
+  var d = snapshot.val() || {};
   var wasRunning = motorRunning;
   motorRunning = !!d.motorState;
   var auto = (d.mode === "auto");
 
-  $("motorRunTxt").textContent = motorRunning ? "Motor is running..." : "Motor stopped";
+  document.getElementById("motorRunTxt").textContent = motorRunning ? "Motor is running..." : "Motor stopped";
   
   if (motorRunning && !wasRunning) {
     motorStartMs = Date.now();
@@ -406,17 +394,17 @@ function applyStatus(d) {
   }
   if (!motorRunning && wasRunning) {
     clearInterval(tickTimer);
-    $("motorRunTxt").textContent = "Motor stopped";
+    document.getElementById("motorRunTxt").textContent = "Motor stopped";
     pushNotif("Motor turned OFF", false);
   }
 
-  $("autoToggle").className = "toggle-sw " + (auto ? "on" : "off");
-  $("autoLabel").textContent = auto ? "ON" : "OFF";
-  $("autoLabel").style.color = auto ? "var(--green)" : "var(--txt3)";
-  $("autoActive").textContent = auto ? "Active" : "Inactive";
-  $("autoActive").style.color = auto ? "var(--green)" : "var(--txt3)";
-  $("modeSpan").textContent = auto ? "Automatic" : "Manual";
-  $("modeSpan").style.color = auto ? "var(--green)" : "var(--txt2)";
+  document.getElementById("autoToggle").className = "toggle-sw " + (auto ? "on" : "off");
+  document.getElementById("autoLabel").textContent = auto ? "ON" : "OFF";
+  document.getElementById("autoLabel").style.color = auto ? "var(--green)" : "var(--txt3)";
+  document.getElementById("autoActive").textContent = auto ? "Active" : "Inactive";
+  document.getElementById("autoActive").style.color = auto ? "var(--green)" : "var(--txt3)";
+  document.getElementById("modeSpan").textContent = auto ? "Automatic" : "Manual";
+  document.getElementById("modeSpan").style.color = auto ? "var(--green)" : "var(--txt2)";
 
   var lvl = d.waterLevel || 0;
   var pcts = [0, 5, 50, 100];
@@ -424,25 +412,25 @@ function applyStatus(d) {
   var colors = ["#94a3b8", "#ef4444", "#3b82f6", "#16a34a"];
   var pct = pcts[Math.min(lvl, 3)];
 
-  $("lvlBar").style.width = pct + "%";
-  $("lvlBar").style.background = "linear-gradient(90deg," + colors[lvl] + "," + colors[lvl] + "aa)";
-  $("lvlPct").textContent = pct + "% Full";
-  $("lvlPct").style.color = colors[lvl];
-  $("lvlStatus").textContent = names[lvl] || "Unknown";
-  $("lvlStatus").style.color = colors[lvl];
-  $("sensorStatus").textContent = lvl > 0 ? "OK" : "Waiting";
-  $("rssiVal").textContent = d.rssi ? d.rssi + " dBm" : "—";
-  $("uptimeVal").textContent = d.uptime ? d.uptime + "s" : "—";
+  document.getElementById("lvlBar").style.width = pct + "%";
+  document.getElementById("lvlBar").style.background = "linear-gradient(90deg," + colors[lvl] + "," + colors[lvl] + "aa)";
+  document.getElementById("lvlPct").textContent = pct + "% Full";
+  document.getElementById("lvlPct").style.color = colors[lvl];
+  document.getElementById("lvlStatus").textContent = names[lvl] || "Unknown";
+  document.getElementById("lvlStatus").style.color = colors[lvl];
+  document.getElementById("sensorStatus").textContent = lvl > 0 ? "OK" : "Waiting";
+  document.getElementById("rssiVal").textContent = d.rssi ? d.rssi + " dBm" : "—";
+  document.getElementById("uptimeVal").textContent = d.uptime ? d.uptime + "s" : "—";
 
   var tankH = 96;
   var baseY = 108;
   var fillH = Math.round(tankH * pct / 100);
   var fillY = baseY - fillH;
-  $("svgWater").setAttribute("y", fillY);
-  $("svgWater").setAttribute("height", fillH);
-  $("svgWater").style.fill = colors[lvl];
+  document.getElementById("svgWater").setAttribute("y", fillY);
+  document.getElementById("svgWater").setAttribute("height", fillH);
+  document.getElementById("svgWater").style.fill = colors[lvl];
 
-  var wave = $("svgWave");
+  var wave = document.getElementById("svgWave");
   if (fillH > 6) {
     wave.style.display = "";
     wave.setAttribute("d", "M15 " + fillY + " Q30 " + (fillY - 3) + " 50 " + fillY + " Q70 " + (fillY + 3) + " 85 " + fillY + " L85 " + (fillY + 2) + " Q70 " + (fillY + 5) + " 50 " + (fillY + 2) + " Q30 " + (fillY - 1) + " 15 " + (fillY + 2) + " Z");
@@ -451,9 +439,9 @@ function applyStatus(d) {
     wave.style.display = "none";
   }
 
-  $("sUptime").textContent = d.uptime ? d.uptime + "s" : "—";
-  $("sRssi").textContent = d.rssi ? d.rssi : "—";
-}
+  document.getElementById("sUptime").textContent = d.uptime ? d.uptime + "s" : "—";
+  document.getElementById("sRssi").textContent = d.rssi ? d.rssi : "—";
+});
 
 function startTick() {
   clearInterval(tickTimer);
@@ -462,7 +450,7 @@ function startTick() {
       clearInterval(tickTimer);
       return;
     }
-    $("motorRunTxt").textContent = "Running for " + Math.round((Date.now() - motorStartMs) / 1000) + "s";
+    document.getElementById("motorRunTxt").textContent = "Running for " + Math.round((Date.now() - motorStartMs) / 1000) + "s";
   }, 1000);
 }
 
@@ -472,28 +460,28 @@ function pushNotif(msg, isOn) {
   if (notifications.length > 5) {
     notifications.pop();
   }
-  $("notifCount").textContent = notifications.length + " alert" + (notifications.length > 1 ? "s" : "");
+  document.getElementById("notifCount").textContent = notifications.length + " alert" + (notifications.length > 1 ? "s" : "");
   
   var notifHtml = "";
   for (var i = 0; i < notifications.length; i++) {
     var n = notifications[i];
     notifHtml += '<div class="notif-item"><div class="notif-icon">' + (n.isOn ? "▶" : "■") + '</div><div><div class="notif-msg">' + n.msg + '</div><div class="notif-time">' + n.time + '</div></div></div>';
   }
-  $("notifList").innerHTML = notifHtml;
+  document.getElementById("notifList").innerHTML = notifHtml;
 
-  $("sEvents").textContent = notifications.length;
-  $("actSection").innerHTML = '<div class="act-item"><span>Status: Motor <strong class="' + (motorRunning ? "on" : "off") + '">' + (motorRunning ? "RUNNING" : "STOPPED") + "</strong></span></div>";
+  document.getElementById("sEvents").textContent = notifications.length;
+  document.getElementById("actSection").innerHTML = '<div class="act-item"><span>Status: Motor <strong class="' + (motorRunning ? "on" : "off") + '">' + (motorRunning ? "RUNNING" : "STOPPED") + "</strong></span></div>";
   
   var logHtml = "";
   for (var j = 0; j < notifications.length; j++) {
     var e = notifications[j];
     logHtml += '<div class="log-row"><span class="log-badge ' + (e.isOn ? "on" : "off") + '">' + (e.isOn ? "ON" : "OFF") + '</span><span class="log-text">' + e.msg + '</span><span class="log-time">' + e.time + '</span></div>';
   }
-  $("logSection").innerHTML = logHtml;
+  document.getElementById("logSection").innerHTML = logHtml;
 }
 
 document.addEventListener("keydown", function(e) {
-  if (e.key === "Enter" && !$("loginPage").classList.contains("hidden")) {
+  if (e.key === "Enter" && !document.getElementById("loginPage").classList.contains("hidden")) {
     doLogin();
   }
 });
